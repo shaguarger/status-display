@@ -9,6 +9,8 @@
 #define DATA_PIN 2
 CRGB leds[NUM_LEDS];
 int memoryBrightness = 255;
+const int NUM_LEDS_ROW = 16;
+const int MAX_BRIGHTNESS_RANDOM_LEDS = 16;
 
 // WIFI + MQTT
 #define mqtt_server "your-mqtt-server"
@@ -17,6 +19,9 @@ int memoryBrightness = 255;
 
 const char* ssid = "ssid";
 const char* password = "password";
+const bool showRandomColor = true;
+const int randomColorStartLine = 3;
+const int randomColorEndLine = 13;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -28,6 +33,21 @@ int randomNumberBetween(int low, int high) {
    return rand() % (high - low + 1) + low;
 }
 
+void showRandomColorIfWanted(){
+  if(!showRandomColor){
+    return;
+  }
+
+  int firstLedToSet = randomColorStartLine * NUM_LEDS_ROW;
+  int lastLedToSet = (randomColorEndLine * NUM_LEDS_ROW) - 1;
+  int randomLed = randomNumberBetween(firstLedToSet, lastLedToSet);
+  leds[randomLed] = CRGB(
+    rand() % MAX_BRIGHTNESS_RANDOM_LEDS,
+    rand() % MAX_BRIGHTNESS_RANDOM_LEDS,
+    rand() % MAX_BRIGHTNESS_RANDOM_LEDS);
+  FastLED.show();
+}
+
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
@@ -37,9 +57,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
-  int randomLed = randomNumberBetween(48, 208);
-  leds[randomLed] = CRGB(rand() % 3, rand() % 3, rand() % 3);
-  FastLED.show();
+  showRandomColorIfWanted();
 
   // use lib 5.13.2 !
   StaticJsonBuffer<512> jsonBuffer;
