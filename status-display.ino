@@ -26,6 +26,7 @@ void setup() {
   Serial.println("setup");
 
   setup_wifi();
+  xTaskCreatePinnedToCore(
     callback_async, /* Function to implement the task */
     "async",    /* Name of the task */
     16384,      /* Stack size in words */
